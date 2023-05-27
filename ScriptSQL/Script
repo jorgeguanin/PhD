@@ -1,1 +1,349 @@
+use dbsiuPhD 
+SET NOCOUNT ON
+DBCC FREEPROCCACHE
+DBCC DROPCLEANBUFFERS
 
+declare @semestre as varchar(10)
+declare @contCurso as int
+declare @ExtraerPromedio as varchar(200)
+declare @data_set as varchar(500)
+declare @periodo as varchar(10)
+
+--variables para insertar en la tabla temporal
+declare @codigo as varchar(15),@sexo as varchar(1),@edad as int,@proPre  as varchar(5),@asispre as varchar(5),@nomFacul as varchar(255),@contgrado as int,@class as varchar(15)
+declare @pr1 as varchar(5),@pr2 as varchar(5),@pr3 as varchar(5),@pr4 as varchar(5),@pr5 as varchar(5),@medpromedios as char(10),@mediaindaprob as char(10)
+declare @asi1 as  varchar(5),@asi2 as  varchar(5),@asi3 as  varchar(5),@asi4  as varchar(5),@asi5  as varchar(5),@sostenimiento as varchar(25)
+declare @re1 as varchar(5),@re2 as varchar(5),@re3 as varchar(5),@re4 as varchar(5),@re5 as varchar(5)
+declare @situacion as int,@financiamiento char(2),@zona char(2),@ingreso char(2),@tenencia char(2),@coefScocioEco char(5)
+declare @semesPre as varchar(10),@mens as varchar(60),@semesFacul as varchar(15)
+declare @facultad as varchar(5),@auxSemes as varchar(15),@E_situacional as varchar(15),@Localizacion_Colegio as varchar(50)
+declare @PcntAsignaturas1 as varchar(5),@PcntAsignaturas2 as varchar(5),@PcntAsignaturas3 as varchar(5),@PcntAsignaturas4 as varchar(5),@PcntAsignaturas5 as varchar(5)
+declare @curso_1 as char(3),@visual_1 as char(3),@lectura_1 as char(3),@auditivo_1 as char(3),@kinesico_1 as char(3)
+declare @curso_2 as char(3),@visual_2 as char(3),@lectura_2 as char(3),@auditivo_2 as char(3),@kinesico_2 as char(3)
+declare @curso_3 as char(3),@visual_3 as char(3),@lectura_3 as char(3),@auditivo_3 as char(3),@kinesico_3 as char(3)
+declare @curso_4 as char(3),@visual_4 as char(3),@lectura_4 as char(3),@auditivo_4 as char(3),@kinesico_4 as char(3)
+declare @curso_5 as char(3),@visual_5 as char(3),@lectura_5 as char(3),@auditivo_5 as char(3),@kinesico_5 as char(3)
+ 
+declare @habito as char(2),@estrategia as char(2),@hijos as char(2),@tamfamiliar as char(2),@niveledufamilia as char(2)
+declare @promedioedadfamiliar as char(2),@cultura as char(2),@vivecon as char(2),@estilo_aprendizaje as char(2)
+declare @jortrab as char(2),@totalmatr as varchar(10),@estilosdocentes as int,@horas_labo as varchar(5),@PreguntoEstilo char(5)
+declare @eaAuditivo as char(2),@eaLectura as char(2),@eaVisual as char(2),@eaKinesico as char(2),@eaMultiVA as char(5),@eaMultiVR as char(5),@eaMultiVK as char(5),@eaMultiAR as char(5),@eaMultiAK as char(5),@eaMultiRK as char(5),@eaMultiARK as char(5),@eaMultiVAR as char(5),@eaMultiVRK as char(5),@eaMultiVARK as char(5)
+declare @opta as char(3),@basica as char(3),@general as char(3),@inves as char(3),@profe as char(3)
+DECLARE @PC1PR AS CHAR(3), @PC1AG AS CHAR(3), @PC1AU AS char(3),@PC2PR AS char(3),@PC2AG  AS char(3), @PC2AU AS char(3),@PC3PR AS char(3),@PC3AG AS char(3), @PC3AU AS char(3),@POCAS1 AS  char(3),@POCAS2 AS  char(3),@POCAS3 AS  char(3),@POTRO1 AS char(3),@POTRO2 AS char(3),@POTRO3 AS char(3),@PEDAD1 AS char(3),@PEDAD2 AS char(3),@PEDAD3 AS char(3),@PEXPEDOCEN AS char(5),@PPondEdad as char(5),@PIndAcademico as char(15)
+DECLARE @SC1PR AS CHAR(3), @SC1AG AS CHAR(3), @SC1AU AS char(3),@SC2PR AS char(3),@SC2AG  AS char(3), @SC2AU AS char(3),@SC3PR AS char(3),@SC3AG AS char(3), @SC3AU AS char(3),@SOCAS1 AS  char(3),@SOCAS2 AS  char(3),@SOCAS3 AS  char(3),@SOTRO1 AS char(3),@SOTRO2 AS char(3),@SOTRO3 AS char(3),@SEDAD1 AS char(3),@SEDAD2 AS char(3),@SEDAD3 AS char(3),@SEXPEDOCEN AS char(5),@SPondEdad as char(5),@SIndAcademico as char(15)
+DECLARE @TC1PR AS CHAR(3), @TC1AG AS CHAR(3), @TC1AU AS char(3),@TC2PR AS char(3),@TC2AG  AS char(3), @TC2AU AS char(3),@TC3PR AS char(3),@TC3AG AS char(3), @TC3AU AS char(3),@TOCAS1 AS  char(3),@TOCAS2 AS  char(3),@TOCAS3 AS  char(3),@TOTRO1 AS char(3),@TOTRO2 AS char(3),@TOTRO3 AS char(3),@TEDAD1 AS char(3),@TEDAD2 AS char(3),@TEDAD3 AS char(3),@TEXPEDOCEN AS char(5),@TPondEdad as char(5),@TIndAcademico as char(15)
+DECLARE @CC1PR AS CHAR(3), @CC1AG AS CHAR(3), @CC1AU AS char(3),@CC2PR AS char(3),@CC2AG  AS char(3), @CC2AU AS char(3),@CC3PR AS char(3),@CC3AG AS char(3), @CC3AU AS char(3),@COCAS1 AS  char(3),@COCAS2 AS  char(3),@COCAS3 AS  char(3),@COTRO1 AS char(3),@COTRO2 AS char(3),@COTRO3 AS char(3),@CEDAD1 AS char(3),@CEDAD2 AS char(3),@CEDAD3 AS char(3),@CEXPEDOCEN AS char(5),@CPondEdad as char(5),@CIndAcademico as char(15)
+DECLARE @QC1PR AS CHAR(3), @QC1AG AS CHAR(3), @QC1AU AS char(3),@QC2PR AS char(3),@QC2AG  AS char(3), @QC2AU AS char(3),@QC3PR AS char(3),@QC3AG AS char(3), @QC3AU AS char(3),@QOCAS1 AS  char(3),@QOCAS2 AS  char(3),@QOCAS3 AS  char(3),@QOTRO1 AS char(3),@QOTRO2 AS char(3),@QOTRO3 AS char(3),@QEDAD1 AS char(3),@QEDAD2 AS char(3),@QEDAD3 AS char(3),@QEXPEDOCEN AS char(5),@QPondEdad as char(5),@QIndAcademico as char(15)
+DECLARE @para_1 as char(3),@audi_1 as char(3),@lec_1 as char(3),@visu_1 as char(3),@kine_1 as char(3)
+DECLARE @para_2 as char(3),@audi_2 as char(3),@lec_2 as char(3),@visu_2 as char(3),@kine_2 as char(3)
+DECLARE @para_3 as char(3),@audi_3 as char(3),@lec_3 as char(3),@visu_3 as char(3),@kine_3 as char(3)
+DECLARE @para_4 as char(3),@audi_4 as char(3),@lec_4 as char(3),@visu_4 as char(3),@kine_4 as char(3)
+DECLARE @para_5 as char(3),@audi_5 as char(3),@lec_5 as char(3),@visu_5 as char(3),@kine_5 as char(3),@cambia_carrera as char(5)
+DECLARE @periodo_estudio as varchar(10)
+--declare @semes as varchar(15),@curso as int,@paralelo as varchar(2), @semestre as varchar(15)
+--tabla para obtener datos en el dataset
+
+drop table tmpData2016
+create table tmpData2016 (codigo_DNI varchar(15),periodo varchar(10),Facultad char(200),carrera_estudio char(200),contador_grado int,sexo  varchar(1),edad_ingreso  int,sostenimiento  varchar(25),localizacion varchar(50),promedio_pre varchar(5),asis_pre  varchar(5), 
+						promedio_1  varchar(5),asis_1 varchar(5),taprobacion_1  varchar(5),IndAprob_1  varchar(5),Categ1PR_1 char(3),Categ1AG_1 char(3),Categ1AU_1  char(3),Categ2PR_1 char(3),Categ2AG_1 char(3),Categ2AU_1 char(3),Categ3PR_1 char(3),Categ3AG_1 char(3),Categ3AU_1  char(3),CategOCAS1_1 char(3),CategOCAS2_1 char(3),CategOCAS3_1 char(3),CategOTRO1_1 char(3),CategOTRO2_1 char(3),CategOTRO3_1 char(3),EDADocnt1_1 char(3),EDADocnt2_1 char(3),EDADocnt3_1 char(3),ExperiDocnt_1 char(5),PondEdadDocnt_1 char(5),IndPrepaAcadDocnt_1 char(15),
+						paralelo_1 char(3),auditivo_1  char(3),lectura_1  char(3),visual_1  char (3),kinesico_1  char (3),
+						promedio_2  varchar(5),asis_2 varchar(5),taprobacion_2  varchar(5),IndAprob_2  varchar(5),Categ1PR_2 char(3),Categ1AG_2 char(3),Categ1AU_2  char(3),Categ2PR_2 char(3),Categ2AG_2 char(3),Categ2AU_2 char(3),Categ3PR_2 char(3),Categ3AG_2 char(3),Categ3AU_2  char(3),CategOCAS1_2 char(3),CategOCAS2_2 char(3),CategOCAS3_2 char(3),CategOTRO1_2 char(3),CategOTRO2_2 char(3),CategOTRO3_2 char(3),EDADocnt1_2 char(3),EDADocnt2_2 char(3),EDADocnt3_2 char(3),ExperiDocnt_2 char(5),PondEdadDocnt_2 char(5),IndPrepaAcadDocnt_2 char(15),
+						paralelo_2 char(3),auditivo_2  char(3),lectura_2  char(3),visual_2  char (3),kinesico_2  char (3),
+						promedio_3  varchar(5),asis_3 varchar(5),taprobacion_3  varchar(5),IndAprob_3  varchar(5),Categ1PR_3 char(3),Categ1AG_3 char(3),Categ1AU_3  char(3),Categ2PR_3 char(3),Categ2AG_3 char(3),Categ2AU_3 char(3),Categ3PR_3 char(3),Categ3AG_3 char(3),Categ3AU_3  char(3),CategOCAS1_3 char(3),CategOCAS2_3 char(3),CategOCAS3_3 char(3),CategOTRO1_3 char(3),CategOTRO2_3 char(3),CategOTRO3_3 char(3),EDADocnt1_3 char(3),EDADocnt2_3 char(3),EDADocnt3_3 char(3),ExperiDocnt_3 char(5),PondEdadDocnt_3 char(5),IndPrepaAcadDocnt_3 char(15),
+						paralelo_3 char(3),auditivo_3  char(3),lectura_3  char(3),visual_3  char (3),kinesico_3  char (3),
+						promedio_4  char(5),asis_4 varchar(5),taprobacion_4  varchar(5),IndAprob_4  varchar(5),Categ1PR_4 char(3),Categ1AG_4 char(3),Categ1AU_4  char(3),Categ2PR_4 char(3),Categ2AG_4 char(3),Categ2AU_4 char(3),Categ3PR_4 char(3),Categ3AG_4 char(3),Categ3AU_4  char(3),CategOCAS1_4 char(3),CategOCAS2_4 char(3),CategOCAS3_4 char(3),CategOTRO1_4 char(3),CategOTRO2_4 char(3),CategOTRO3_4 char(3),EDADocnt1_4 char(3),EDADocnt2_4 char(3),EDADocnt3_4 char(3),ExperiDocnt_4 char(5),PondEdadDocnt_4 char(5),IndPrepaAcadDocnt_4 char(15),
+						paralelo_4 char(3),auditivo_4  char(3),lectura_4  char(3),visual_4  char (3),kinesico_4  char (3),
+						promedio_5  varchar(5),asis_5 varchar(5),taprobacion_5  varchar(5),IndAprob_5  varchar(5),Categ1PR_5 char(3),Categ1AG_5 char(3),Categ1AU_5  char(3),Categ2PR_5 char(3),Categ2AG_5 char(3),Categ2AU_5 char(3),Categ3PR_5 char(3),Categ3AG_5 char(3),Categ3AU_5  char(3),CategOCAS1_5 char(3),CategOCAS2_5 char(3),CategOCAS3_5 char(3),CategOTRO1_5 char(3),CategOTRO2_5 char(3),CategOTRO3_5 char(3),EDADocnt1_5 char(3),EDADocnt2_5 char(3),EDADocnt3_5 char(3),ExperiDocnt_5 char(5),PondEdadDocnt_5 char(5),IndPrepaAcadDocnt_5 char(15),
+						paralelo_5 char(3),auditivo_5  char(3),lectura_5  char(3),visual_5  char (3),kinesico_5  char (3),
+						habito_estudios char(2),estrategia_estudio char(2),num_hijos char(2),tamaño_familia char(2),nivel_educacion_familia char(2),
+						media_edad_familia char(2),tipo_cultura char(2),estilo_aprendizaje char(2),PreguntoEstilo char(5),viveCon char(2),
+						jornada_trabajo char(2),total_matriculas varchar(10),financiamiento char(2),zona char(2),ingreso char(2),vivienda char(2),
+						horas_labo varchar(5),
+						auditivo  char(3),lectura  char(3),visual  char(3),kinesico  char(3),eaMultiVA char(5),eaMultiVR  char(5),eaMultiVK  char(5),eaMultiAR  char(5),eaMultiAK  char(5),eaMultiRK char(5),eaMultiARK  char(5),eaMultiVAR  char(5),eaMultiVRK  char(5),eaMultiVARK  char(5),
+						optativa char(3),basica_especifica char(3),general char(3),investigacion char(3),profesional char(3),
+						media_promedios char(10),media_IndAprobacion char(10),cambia_carrera char(5),
+						situacion  varchar(15),clase varchar(15))
+
+select @situacion=0
+declare periodosEstudios cursor for (
+select * from
+--(select distinct  lectivo from tbsemestre where codigo_semestre like 'F%' and substring(codigo_semestre,6,1)='1'and LEFT(lectivo,4 ) between 2000 and 2001)as q1)
+
+(select distinct  lectivo from tbsemestre where codigo_semestre like 'F%' and substring(codigo_semestre,6,1)='1' and  LEFT(lectivo,4 ) between 2001 and 2001)as q1)
+open  periodosEstudios
+fetch next from periodosEstudios into @periodo
+
+while @@fetch_status=0
+	begin
+	select @contCurso=1
+
+		while @contCurso<=1
+		begin
+			--obtiene de forma general a los estudiantes deun determinado año y periodo
+			declare alumnos cursor for(select dg.codigo
+										,genero=(case when dg.sexo ='M' then 1 when dg.sexo ='F' then 2 else 0 end)
+										,edad_ingreso=year((select top 1 fecha from tbmatricula where codigo=mat.codigo order by fecha asc))-year(dg.nacimiento),mat.codigo_semestre from tbmatricula mat, tbsemestre se,tbdatogeneral dg
+										where mat.codigo_semestre=se.codigo_semestre and se.lectivo=@periodo and se.codigo_semestre like 'F%' and mat.año_semestre=1 and mat.codigo=dg.codigo and mat.numero_derecho>0
+										and left(se.codigo_semestre,5)<>'FI020' and left(se.codigo_semestre,5)<>'FI021')
+				open  alumnos
+				fetch next from alumnos into @codigo,@sexo,@edad,@semesFacul
+					while @@fetch_status=0
+					begin
+
+						/*MMMMMMMMMMMMMMM MEDIA DE MATERIAS APROBADAS EN EL SEMESTRE MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM*/
+						/*MMMMMMMMMMMMMMM LOCALIZACION GEOGRAFICA DEL COLEGIO/INSTITUTO MMMMMMMMMMMMMMMMMMMMMMMMMMMM*/
+						
+						set @periodo_estudio =@periodo--=cast(rtrim(left(@periodo,4))as integer) 
+						select @Localizacion_Colegio=(case 
+						when q1.codigo_provincia='PR001' and q1.codigo_canton='CA001' then 'LOCAL'
+						when q1.codigo_provincia<>'PR001' and q1.codigo_canton<>'CA001' then 'OTROS'
+						when q1.codigo_provincia='PR001'  then 'FUERA_QUEVEDO'
+						else '0'
+						end)
+						 from (
+						select ca.codigo_canton,pr.codigo_provincia from tbcanton ca,tbprovincia pr where ca.codigo_provincia=pr.codigo_provincia
+						and ca.codigo_canton in(
+						select codigo_canton from tbinstitucion where codigo_inst in(
+						select top 1 codigo_inst from tbestudio where codigo=@codigo and codigo_inst like'C%'))) as q1
+						if (@Localizacion_Colegio  is null) set @Localizacion_Colegio='?'
+
+						/*MMMMMMMMMMMMMMM*/
+						set @semesPre=(select top 1 substring(codigo_semestre,2,10) from tbinscripcion where codigo=@codigo order by fecha desc)
+						set @facultad=(select fa.codigo_facultad from tbfacultaddepartamento fa,tbescuelaseccion es, tbcarrera ca where ca.codigo_carrera=left(@semesFacul,5) and ca.codigo_escuela=es.codigo_escuela and es.codigo_facultad=fa.codigo_facultad)
+						set @nomFacul=(select fa.nombre from tbfacultaddepartamento fa,tbescuelaseccion es, tbcarrera ca where ca.codigo_carrera=left(@semesFacul,5) and ca.codigo_escuela=es.codigo_escuela and es.codigo_facultad=fa.codigo_facultad)
+						set @sostenimiento=(select top 1 financiamiento from tbinstitucion where codigo_inst in(
+											select codigo_inst from tbestudio where codigo=@codigo and codigo_inst like'C%'))
+						if (@sostenimiento is null) set @sostenimiento='?'
+						set @sostenimiento=(case when @sostenimiento='F' then 'FISCAL' when @sostenimiento='P' then 'PARTICULAR' when @sostenimiento='?' then '0' else '3' end)
+						exec pa_DBUAprobacionxResolucionPre_DEA @codigo,@semesPre,@mens output,@proPre output
+						exec pa_FALTAS_PRE_DEA @codigo,@asispre output
+
+						--  if isnull(@proPre) 	set @proPre='?' 				
+						if (@proPre='0' or @propre is null) set @proPre='?'---5 toma el valor para indicar que no se sabe el promedio
+						--if (@asispre=0 or @asispre is null )set @asispre='?'
+						--if (@asispre is null) set @asispre='?'
+
+						--datos para pimer año	
+						set @auxSemes=@semesFacul
+						
+						--print @auxSemes
+						exec pa_CategoriasDocentes_DEA @codigo,1,@auxSemes,@PC1PR output, @PC1AG output, @PC1AU output,@PC2PR output,@PC2AG output
+						, @PC2AU output,@PC3PR output,@PC3AG output, @PC3AU output,@POCAS1 output,@POCAS2 output,@POCAS3 output
+						,@POTRO1 output,@POTRO2 output,@POTRO3 output,@PEDAD1 output,@PEDAD2 output,@PEDAD3 output
+						,@PEXPEDOCEN output,@PPondEdad output,@PIndAcademico OUTPUT 
+						
+						if @pr1='?' set @asi1='?'
+											
+						if @pr1<>'?' exec pa_FALTASFACUL_DEA @codigo,1,@semesFacul,@asi1 output  						
+--						set @re1=(select count(*) from tbmatricula where codigo=@codigo and año_semestre=1 and codigo_Semestre like left(@semesFacul,5)+'%')
+						if @asi1<>'?' exec pa_TiempoAprobacion_DEA @codigo,@auxSemes,1,@re1 output else set @re1='?'
+						if @re1<>'0' exec pa_Media_Asignaturas_DEA @codigo,@auxSemes,1, @PcntAsignaturas1 output --else set @PcntAsignaturas1=-1
+						--print @codigo+' - '+@semesFacul +' - '+ @pr1 + ' - '+@PcntAsignaturas1
+						exec dbo.pa_CuentaEstilosDocentes 1,@codigo,@auxSemes,@audi_1  output,@lec_1 output,@visu_1 output,@kine_1 output,@eaMultiVA output,@eaMultiVR output,@eaMultiVK output,@eaMultiAR output,@eaMultiAK output,@eaMultiRK output,@eaMultiARK output,@eaMultiVAR output,@eaMultiVRK output,@eaMultiVARK output
+						exec pa_Promedios_DEA @codigo,1,@facultad,0,@pr1 output ,@auxSemes output ,@para_1  output,@periodo_estudio 
+
+						--datos de segundo año
+						
+						
+						exec pa_CategoriasDocentes_DEA @codigo,2,@auxSemes,@SC1PR output, @SC1AG output, @SC1AU output,@SC2PR output,@SC2AG  output, @SC2AU output,@SC3PR output,@SC3AG output, @SC3AU output,@SOCAS1 output,@SOCAS2 output,@SOCAS3 output,@SOTRO1 output,@SOTRO2 output,@SOTRO3 output,@SEDAD1 output,@SEDAD2 output,@SEDAD3 output,@SEXPEDOCEN output,@SPondEdad output,@SIndAcademico OUTPUT 
+						
+						if @pr2='?' set @asi2='?'
+						if @pr2<>'?'  exec pa_FALTASFACUL_DEA @codigo,2,@auxSemes,@asi2 output  
+						if @asi2<>'?' exec pa_TiempoAprobacion_DEA @codigo,@auxSemes,2,@re2 output else set @re2='?'
+						if @re2<>'0' exec pa_Media_Asignaturas_DEA @codigo,@auxSemes,2, @PcntAsignaturas2 output --else set @PcntAsignaturas2=-1
+						--print @codigo+' - '+@semesFacul +' - '+ @pr2+ ' - '+@PcntAsignaturas2
+						exec dbo.pa_CuentaEstilosDocentes 2,@codigo,@auxSemes,@audi_2  output,@lec_2 output,@visu_2 output,@kine_2 output,@eaMultiVA output,@eaMultiVR output,@eaMultiVK output,@eaMultiAR output,@eaMultiAK output,@eaMultiRK output,@eaMultiARK output,@eaMultiVAR output,@eaMultiVRK output,@eaMultiVARK output
+						exec pa_Promedios_DEA @codigo,2,@facultad,0,@pr2 output,@auxSemes output ,@para_2 output,@periodo_estudio 
+						
+						--datos de tercer año					
+						
+						exec pa_CategoriasDocentes_DEA @codigo,3,@auxSemes,@TC1PR output, @TC1AG output, @TC1AU output,@TC2PR output,@TC2AG  output, @TC2AU output,@TC3PR output,@TC3AG output, @TC3AU output,@TOCAS1 output,@TOCAS2 output,@TOCAS3 output,@TOTRO1 output,@TOTRO2 output,@TOTRO3 output,@TEDAD1 output,@TEDAD2 output,@TEDAD3 output,@TEXPEDOCEN output,@TPondEdad output,@TIndAcademico OUTPUT  
+						
+						if @pr3='?' set @asi3='?'
+						if @pr3<>'?' exec pa_FALTASFACUL_DEA @codigo,3,@auxSemes,@asi3 output  
+						if @asi3<>'?' exec pa_TiempoAprobacion_DEA @codigo,@auxSemes,3,@re3 output else set @re3='?'
+						if @re3<>'0'exec pa_Media_Asignaturas_DEA @codigo,@auxSemes,3, @PcntAsignaturas3 output --else set @PcntAsignaturas3=-1
+						--set @re3=(select count(*) from tbmatricula where codigo=@codigo and codigo_semestre like left(@semesFacul,5)+'%' and año_semestre=3)
+						--print @codigo+' - '+@semesFacul +' - '+ @pr3+ ' - '+@PcntAsignaturas3
+						--exec dbo.pa_CuentaEstilosDocentes 1,@codigo,@semesFacul,@auditivo_1  output,@lectura_1 output,@visual_1 output,@kinesico_1 output,@eaMultiVA output,@eaMultiVR output,@eaMultiVK output,@eaMultiAR output,@eaMultiAK output,@eaMultiRK output,@eaMultiARK output,@eaMultiVAR output,@eaMultiVRK output,@eaMultiVARK output
+						exec dbo.pa_CuentaEstilosDocentes 3,@codigo,@auxSemes,@audi_3  output,@lec_3 output,@visu_3 output,@kine_3 output,@eaMultiVA output,@eaMultiVR output,@eaMultiVK output,@eaMultiAR output,@eaMultiAK output,@eaMultiRK output,@eaMultiARK output,@eaMultiVAR output,@eaMultiVRK output,@eaMultiVARK output
+					    exec pa_Promedios_DEA @codigo,3,@facultad,0,@pr3 output,@auxSemes output,@para_3 output,@periodo_estudio 
+
+						--datos de cuarto año
+						--set @auxSemes=left(@semesFacul,6)+cast(cast(right(@semesFacul,2)as int)+3 as varchar(3))
+						
+						exec pa_CategoriasDocentes_DEA @codigo,4,@auxSemes,@CC1PR output, @CC1AG output, @CC1AU output,@CC2PR output,@CC2AG  output, @CC2AU output,@CC3PR output,@CC3AG output, @CC3AU output,@COCAS1 output,@COCAS2 output,@COCAS3 output,@COTRO1 output,@COTRO2 output,@COTRO3 output,@CEDAD1 output,@CEDAD2 output,@CEDAD3 output,@CEXPEDOCEN output,@CPondEdad output ,@CIndAcademico OUTPUT 
+						--set @auxSemes=@semesFacul
+						
+						if @pr4='?'  set @asi4='?'
+						if @pr4<>'?'  exec pa_FALTASFACUL_DEA @codigo,4,@auxSemes,@asi4 output  
+						if @asi4<>'?' exec pa_TiempoAprobacion_DEA @codigo,@auxSemes,4,@re4 output else set @re4='?'
+						if @re4<>'0' exec pa_Media_Asignaturas_DEA @codigo,@auxSemes,4, @PcntAsignaturas4 output --else set @PcntAsignaturas4=-1
+						--set @re4=(select count(*) from tbmatricula where codigo=@codigo and codigo_semestre like left(@semesFacul,5)+'%' and año_semestre=4)
+						--print @codigo+' - '+@semesFacul +' - '+ @pr4+ ' - '+@PcntAsignaturas4
+						exec dbo.pa_CuentaEstilosDocentes 4,@codigo,@auxSemes,@audi_4  output,@lec_4 output,@visu_4 output,@kine_4 output,@eaMultiVA output,@eaMultiVR output,@eaMultiVK output,@eaMultiAR output,@eaMultiAK output,@eaMultiRK output,@eaMultiARK output,@eaMultiVAR output,@eaMultiVRK output,@eaMultiVARK output
+						exec pa_Promedios_DEA @codigo,4,@facultad,0,@pr4 output,@auxSemes output,@para_4 output,@periodo_estudio 
+
+
+						--datos de quinto año
+						exec pa_CategoriasDocentes_DEA @codigo,5,@auxSemes,@QC1PR output, @QC1AG output, @QC1AU output,@QC2PR output,@QC2AG  output, @QC2AU output,@QC3PR output,@QC3AG output, @QC3AU output,@QOCAS1 output,@QOCAS2 output,@QOCAS3 output,@QOTRO1 output,@QOTRO2 output,@QOTRO3 output,@QEDAD1 output,@QEDAD2 output,@QEDAD3 output,@QEXPEDOCEN output,@QPondEdad output,@QIndAcademico OUTPUT 
+						if @pr5='?' set @asi5='?'
+						if @pr5<>'?' exec pa_FALTASFACUL_DEA @codigo,5,@auxSemes,@asi5 output --else 
+						if @asi5<>'?' exec pa_TiempoAprobacion_DEA @codigo,@auxSemes,5,@re5 output else set @re5='?'
+						if @re5<>'0' exec pa_Media_Asignaturas_DEA @codigo,@auxSemes,5, @PcntAsignaturas5 output --else set @PcntAsignaturas5=-1
+						exec dbo.pa_CuentaEstilosDocentes 5,@codigo,@semesFacul,@audi_5  output,@lec_5 output,@visu_5 output,@kine_5 output,@eaMultiVA output,@eaMultiVR output,@eaMultiVK output,@eaMultiAR output,@eaMultiAK output,@eaMultiRK output,@eaMultiARK output,@eaMultiVAR output,@eaMultiVRK output,@eaMultiVARK output
+						exec pa_Promedios_DEA @codigo,5,@facultad,0,@pr5 output,@auxSemes output,@para_5 output,@periodo_estudio 
+
+						select @eaAuditivo=0
+						select @eaLectura=0
+						select @eaVisual=0
+						select @eaKinesico=0
+						--print @semesFacul
+
+
+						
+						--exec dbo.pa_CuentaEstilosDocentes 0,@codigo,@semesFacul,@eaAuditivo  output,@eaLectura output,@eaVisual output,@eaKinesico output,@eaMultiVA output,@eaMultiVR output,@eaMultiVK output,@eaMultiAR output,@eaMultiAK output,@eaMultiRK output,@eaMultiARK output,@eaMultiVAR output,@eaMultiVRK output,@eaMultiVARK output
+						
+						exec pa_AreaFormacionCarreras_DEA @semesFacul, @opta output,@basica output,@general output, @inves output,@profe output
+						
+						--if @eaAuditivo ='-1' set @eaAuditivo ='?'
+						--if @eaVisual ='-1' set @eaVisual ='?'
+						--if @eaLectura ='-1' set @eaLectura ='?'
+						--if @eaKinesico ='-1' set @eaKinesico ='?'
+						
+						exec dbo.pa_EstiloAprendizaje_DEA @codigo ,@estilo_aprendizaje output,@PreguntoEstilo output  
+						
+						exec pa_complementos_DEA @codigo,@habito output,@estrategia output ,@hijos output,@tamfamiliar output,
+						@niveledufamilia output,@promedioedadfamiliar output,@cultura output,@vivecon output
+						
+						exec pa_JornadaTrabajo_DEA @codigo,@jortrab output 
+						exec dbo.pa_numeromatriculas_DEA @codigo,@semesFacul,@totalmatr output
+						
+						/*
+						declare @contmtr as float,@acumtr as float
+						set @contmtr=0
+						set @acumtr=0
+						 if @re1<>'?' set @acumtr=(CAST(@re1 AS float)) else set @contmtr=@contmtr+1
+						 if @re2<>'?' set @acumtr=@acumtr+(CAST(@re2 AS float)) else set @contmtr=@contmtr+1
+						 if @re3<>'?' set @acumtr=@acumtr+(CAST(@re3 AS float)) else set @contmtr=@contmtr+1
+						 if @re4<>'?' set @acumtr=@acumtr+(CAST(@re4 AS float)) else set @contmtr=@contmtr+1
+						 if @re5<>'?' set @acumtr=@acumtr+(CAST(@re5 AS float)) else set @contmtr=@contmtr+1
+						 set @contmtr=5-@contmtr
+						 print @re1 +' '+@re2 +' '+@re3 +' '+@re4 +' '+@re5
+						 print cast(@acumtr as char (5)) +' '+ cast(@contmtr as char(5))
+						if @contmtr >0 set @acumtr=@acumtr/@contmtr
+						set @totalmatr=CAST(@acumtr as varchar(10))
+						*/
+						exec dbo.pa_horasInternet_DEA @codigo,@horas_labo output
+						
+						
+						
+--obtiene informacion del financiamiento de los estudios
+if exists(select * from tbfichasocioeconomica where codigo=@codigo)
+	select @financiamiento=(case when financiamiento=5 then 4 else financiamiento end)  from tbfichasocioeconomica where codigo=@codigo
+else set @financiamiento=3
+--obtiene informacion de la zona donde vive
+if exists(select * from tbfichasocioeconomica where codigo=@codigo)
+	select @zona=(case when zona_residencial=5 then 4 else zona_residencial end) from tbfichasocioeconomica where codigo=@codigo
+else set @zona=2
+--obtiene informacion del ingreso de la familia con quien vive el alumno
+if exists(select * from tbfichasocioeconomica where codigo=@codigo)
+	select @ingreso=(case when ingreso_familiar =5 then 4 else ingreso_familiar end) from tbfichasocioeconomica where codigo=@codigo
+else set @ingreso=2
+--obtiene informacion del tipo de vivienda donde vive el alumno
+if exists(select * from tbfichasocioeconomica where codigo=@codigo)
+	select @tenencia=(case when tenencia_vivienda=5 then 4 else tenencia_vivienda end)from tbfichasocioeconomica where codigo=@codigo
+			else set @tenencia=4
+			--set @coefScocioEco=cast(cast((cast(@financiamiento as float)+cast(@zona as float)+cast(@ingreso as  float)+cast(@tenencia as float))/4 as float) as char(5))
+			--print @pr1+'-'+@pr2+'-'+@pr3+'-'+@pr4+'-'+@pr5
+
+						if @pr1<>'?' set @situacion=@situacion+1
+						if @pr2<>'?' set @situacion=@situacion+1
+						if @pr3<>'?' set @situacion=@situacion+1
+						if @pr4<>'?' set @situacion=@situacion+1
+						if @pr5<>'?' set @situacion=@situacion+1
+
+
+						
+						if @pr1='?' set @pr1='0'
+						if @pr2='?' set @pr2='0'
+						if @pr3='?' set @pr3='0'
+						if @pr4='?' set @pr4='0'
+						if @pr5='?' set @pr5='0'
+						
+						
+						if @PcntAsignaturas1='?' set @PcntAsignaturas1='0'
+						if @PcntAsignaturas2='?' set @PcntAsignaturas2='0'					
+						if @PcntAsignaturas3='?' set @PcntAsignaturas3='0'
+						if @PcntAsignaturas4='?' set @PcntAsignaturas4='0'
+						if @PcntAsignaturas5='?' set @PcntAsignaturas5='0'
+						
+						/*declare @auxpro as float
+						set @auxpro=(@pr1+@pr2+@pr3+@pr4+@pr5)/5
+						set @medpromedios=CAST(@auxpro as CHAR(10))
+						
+						print @pr1
+						print @pr2
+						print @pr3
+						print @pr4
+						print @pr5*/
+						declare @carrera_estudio as char(200)
+						set @carrera_estudio ='XXXXXXXXXXXXXXXX'
+						set @carrera_estudio =(select ltrim(rtrim(TbCarrera.nombre)) from TbCarrera where codigo_carrera =ltrim(rtrim(left(@semesFacul,5))))
+						
+						set @medpromedios=cast( ((cast(isnull(@pr1,0) as float)+cast(isnull(@pr2,0) as float)+cast(isnull(@pr3,0) as float)+cast(isnull(@pr4,0) as float)+cast(isnull(@pr5,0) as float))/5 ) as char(10))
+						set @mediaindaprob= CAST( ((ISNULL( CAST(@PcntAsignaturas1 as float),0)+ISNULL( CAST(@PcntAsignaturas2 as float),0)+ISNULL( CAST(@PcntAsignaturas3 as float),0)+ISNULL( CAST(@PcntAsignaturas4 as float),0)+ISNULL( CAST(@PcntAsignaturas5 as float),0))/5)  AS char (10))
+						exec pa_CambiaCarrea @codigo, @cambia_carrera output,@semesFacul,@contgrado output
+
+
+						select @E_situacional=(case when @situacion =5 and cast(ltrim(rtrim(@medpromedios)) as float )>=5 then 'APROBADO'
+						when @situacion <5 and @situacion>=0 and cast(ltrim(rtrim(@medpromedios)) as float )<5 then 'ABANDONO'
+						--when @situacion =0 then '3'--'ABANDONO'
+						else 'ABANDONO'
+						end)
+						select @class=(case when @cambia_carrera='SI' and @E_situacional<>'APROBADO' then 'CAMBIA' else @E_situacional end)
+
+
+						-- ********************************** INSERCION DE DATOS EN LA TABLA **********************************
+						INSERT INTO tmpData2016 values ( @codigo,@periodo_estudio,@nomFacul,@carrera_estudio,@contgrado,@sexo,@edad,@sostenimiento,@Localizacion_Colegio,@proPre ,@asispre,
+														@pr1,@asi1,@re1,@PcntAsignaturas1,@PC1PR , @PC1AG , @PC1AU ,@PC2PR ,@PC2AG  , @PC2AU ,@PC3PR ,@PC3AG , @PC3AU ,@POCAS1 ,@POCAS2 ,@POCAS3 ,@POTRO1 ,@POTRO2 ,@POTRO3 ,@PEDAD1 ,@PEDAD2 ,@PEDAD3 ,@PEXPEDOCEN ,@PPondEdad,@PIndAcademico,
+														@para_1,@audi_1,@lec_1,@visu_1,@kine_1,
+														@pr2,@asi2,@re2,@PcntAsignaturas2,@SC1PR , @SC1AG , @SC1AU ,@SC2PR ,@SC2AG  , @SC2AU ,@SC3PR ,@SC3AG , @SC3AU ,@SOCAS1 ,@SOCAS2 ,@SOCAS3 ,@SOTRO1 ,@SOTRO2 ,@SOTRO3 ,@SEDAD1 ,@SEDAD2 ,@SEDAD3 ,@SEXPEDOCEN ,@SPondEdad,@SIndAcademico,
+														@para_2,@audi_2,@lec_2,@visu_2,@kine_2,
+														@pr3,@asi3,@re3,@PcntAsignaturas3,@TC1PR , @TC1AG , @TC1AU ,@TC2PR ,@TC2AG  , @TC2AU ,@TC3PR ,@TC3AG , @TC3AU ,@TOCAS1 ,@TOCAS2 ,@TOCAS3 ,@TOTRO1 ,@TOTRO2 ,@TOTRO3 ,@TEDAD1 ,@TEDAD2 ,@TEDAD3 ,@TEXPEDOCEN ,@TPondEdad,@TIndAcademico,
+														@para_3,@audi_3,@lec_3,@visu_3,@kine_3,
+														@pr4,@asi4,@re4,@PcntAsignaturas4,@CC1PR , @CC1AG , @CC1AU ,@CC2PR ,@CC2AG  , @CC2AU ,@CC3PR ,@CC3AG , @CC3AU ,@COCAS1 ,@COCAS2 ,@COCAS3 ,@COTRO1 ,@COTRO2 ,@COTRO3 ,@CEDAD1 ,@CEDAD2 ,@CEDAD3 ,@CEXPEDOCEN ,@CPondEdad,@CIndAcademico,
+														@para_4,@audi_4,@lec_4,@visu_4,@kine_4,
+														@pr5,@asi5,@re5,@PcntAsignaturas5,@QC1PR , @QC1AG , @QC1AU ,@QC2PR ,@QC2AG  , @QC2AU ,@QC3PR ,@QC3AG , @QC3AU ,@QOCAS1 ,@QOCAS2 ,@QOCAS3 ,@QOTRO1 ,@QOTRO2 ,@QOTRO3 ,@QEDAD1 ,@QEDAD2 ,@QEDAD3 ,@QEXPEDOCEN ,@QPondEdad,@QIndAcademico,
+														@para_5,@audi_5,@lec_5,@visu_5,@kine_5,
+														@habito,@estrategia,@hijos,@tamfamiliar,@niveledufamilia,
+														@promedioedadfamiliar,@cultura,@estilo_aprendizaje,@PreguntoEstilo,@vivecon,
+														@jortrab,@totalmatr, @financiamiento,@zona,@ingreso,@tenencia,
+														@horas_labo,
+														cast(@eaAuditivo as CHAR(3)),cast(@eaLectura as CHAR(3)),cast(@eaVisual as CHAR(3)),cast(@eaKinesico as CHAR(3)),@eaMultiVA ,@eaMultiVR ,@eaMultiVK ,@eaMultiAR ,@eaMultiAK,@eaMultiRK ,@eaMultiARK,@eaMultiVAR,@eaMultiVRK ,@eaMultiVARK, 
+														@opta,@basica,@general,@inves,@profe,
+														@medpromedios,@mediaindaprob,@cambia_carrera,
+														@E_situacional,@class)
+							
+					
+						set @pr1=0 set @pr2=0 set @pr3=0 set @pr4=0 set @pr5=0 set @proPre=0
+						set @asi1=0 set @asi2=0 set @asi3=0 set @asi4=0 set @asi5=0 set @asispre=0	
+						set @re1='' set @re2='' set @re3='' set @re4='' set @re5='' set @situacion=0 set @sostenimiento=0	
+						set @habito='?' set @estrategia='?' set @hijos='?' set @tamfamiliar='?'set @niveledufamilia='?'
+						set @promedioedadfamiliar='?'set @cultura='?'set @estilo_aprendizaje='?'set @vivecon='?'
+						set @contgrado	=-1		
+						fetch next from alumnos into @codigo,@sexo,@edad,@semesFacul
+						
+					end
+					close alumnos
+					deallocate alumnos
+			--print cast(@contCurso as varchar(2))+' --- '+@periodo
+			set @contCurso=@contCurso+1
+			fetch next from periodosEstudios into @periodo
+		end
+
+		--set @contCurso=1--inica en 1 para volver a evaluar con el siguiente periodo y desde 1 curso
+		
+	end
+close periodosEstudios
+deallocate periodosEstudios
